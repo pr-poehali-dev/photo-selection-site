@@ -145,3 +145,43 @@ export const deletePhotosFromAlbum = (albumId: string, photoIds: string[]): bool
   saveAlbums(updatedAlbums);
   return true;
 };
+
+// Move photo to another album
+export const movePhotoToAlbum = (photoId: string, sourceAlbumId: string, destinationAlbumId: string): boolean => {
+  const albums = getAlbums();
+  const sourceAlbumIndex = albums.findIndex(album => album.id === sourceAlbumId);
+  const destAlbumIndex = albums.findIndex(album => album.id === destinationAlbumId);
+  
+  if (sourceAlbumIndex === -1 || destAlbumIndex === -1) return false;
+  
+  // Find the photo to move
+  const photoToMove = albums[sourceAlbumIndex].photos.find(photo => photo.id === photoId);
+  if (!photoToMove) return false;
+  
+  // Create a new photo for the destination album
+  const newPhoto = {
+    ...photoToMove,
+    id: `photo-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+    albumId: destinationAlbumId
+  };
+  
+  // Add to destination album
+  const updatedDestAlbum = {
+    ...albums[destAlbumIndex],
+    photos: [...albums[destAlbumIndex].photos, newPhoto]
+  };
+  
+  // Remove from source album
+  const updatedSourceAlbum = {
+    ...albums[sourceAlbumIndex],
+    photos: albums[sourceAlbumIndex].photos.filter(photo => photo.id !== photoId)
+  };
+  
+  // Update albums
+  const updatedAlbums = [...albums];
+  updatedAlbums[sourceAlbumIndex] = updatedSourceAlbum;
+  updatedAlbums[destAlbumIndex] = updatedDestAlbum;
+  
+  saveAlbums(updatedAlbums);
+  return true;
+};

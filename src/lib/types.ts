@@ -15,7 +15,10 @@ export interface Photo {
 }
 
 export interface CollageSettings {
-  gap: number;
+  gapX: number;
+  gapY: number;
   photoSize: 'small' | 'medium' | 'large';
-  layout: 'grid' | 'masonry' | 'cards';
+  layout: 'grid' | 'masonry' | 'cards' | 'rows' | 'filmstrip';
+  aspectRatio: 'original' | 'square' | 'portrait' | 'landscape';
+  hover: 'zoom' | 'info' | 'none';
 }

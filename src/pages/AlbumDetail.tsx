@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { getAlbumById, addPhotoToAlbum } from "@/lib/data";
-import { Album } from "@/lib/types";
+import { Album, Photo } from "@/lib/types";
 import Header from "@/components/Header";
 import PhotoGrid from "@/components/PhotoGrid";
 import PhotoUpload from "@/components/PhotoUpload";
@@ -35,6 +35,21 @@ const AlbumDetail = () => {
     if (updatedAlbum) {
       setAlbum(updatedAlbum);
     }
+  };
+  
+  const handlePhotoMoved = (photoId: string, destinationAlbumId: string) => {
+    if (!id || !album) return;
+    
+    // Find the photo to move
+    const photoToMove = album.photos.find(photo => photo.id === photoId);
+    if (!photoToMove) return;
+    
+    // Add photo to destination album
+    addPhotoToAlbum(destinationAlbumId, photoToMove.name, photoToMove.url);
+    
+    // Remove photo from current album
+    const photosToDelete = [photoId];
+    handlePhotosUpdated();
   };
   
   if (loading) {
@@ -88,6 +103,7 @@ const AlbumDetail = () => {
             photos={album.photos} 
             albumId={album.id}
             onPhotosDeleted={handlePhotosUpdated}
+            onPhotoMoved={handlePhotoMoved}
           />
         </div>
       </main>
