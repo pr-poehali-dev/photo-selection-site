@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Upload, CheckCircle, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { addPhotoToAlbum } from "@/lib/data";
 
 interface PhotoUploadProps {
   albumId: string;
@@ -11,6 +12,7 @@ interface PhotoUploadProps {
 
 const PhotoUpload = ({ albumId, onPhotoUploaded }: PhotoUploadProps) => {
   const [files, setFiles] = useState<File[]>([]);
+  const [photoNames, setPhotoNames] = useState<{[key: string]: string}>({});
   const [uploadProgress, setUploadProgress] = useState<{[key: string]: number}>({});
   const [isUploading, setIsUploading] = useState(false);
   
@@ -21,10 +23,17 @@ const PhotoUpload = ({ albumId, onPhotoUploaded }: PhotoUploadProps) => {
       
       // Initialize progress for new files
       const newProgress = {...uploadProgress};
+      const newNames = {...photoNames};
+      
       newFiles.forEach(file => {
         newProgress[file.name] = 0;
+        // Use filename without extension as default photo name
+        const baseName = file.name.split('.').slice(0, -1).join('.');
+        newNames[file.name] = baseName || file.name;
       });
+      
       setUploadProgress(newProgress);
+      setPhotoNames(newNames);
     }
   };
   
@@ -34,6 +43,17 @@ const PhotoUpload = ({ albumId, onPhotoUploaded }: PhotoUploadProps) => {
     const newProgress = {...uploadProgress};
     delete newProgress[fileName];
     setUploadProgress(newProgress);
+    
+    const newNames = {...photoNames};
+    delete newNames[fileName];
+    setPhotoNames(newNames);
+  };
+  
+  const handleNameChange = (fileName: string, newName: string) => {
+    setPhotoNames(prev => ({
+      ...prev,
+      [fileName]: newName
+    }));
   };
   
   const uploadFiles = async () => {
@@ -41,26 +61,47 @@ const PhotoUpload = ({ albumId, onPhotoUploaded }: PhotoUploadProps) => {
     
     setIsUploading(true);
     
-    // Simulate upload for each file
+    // Process each file
     for (const file of files) {
-      for (let progress = 0; progress <= 100; progress += 10) {
+      // Create a FileReader to read the file as data URL
+      const reader = new FileReader();
+      
+      // Setup progress updates
+      for (let progress = 0; progress <= 90; progress += 10) {
         setUploadProgress(prev => ({
           ...prev,
           [file.name]: progress
         }));
         
-        // Wait for 200ms to simulate upload progress
-        await new Promise(resolve => setTimeout(resolve, 200));
+        // Simulate upload progress with short delays
+        await new Promise(resolve => setTimeout(resolve, 100));
       }
+      
+      // Return a promise that resolves when the file is read
+      const fileDataUrl = await new Promise<string>((resolve) => {
+        reader.onload = () => resolve(reader.result as string);
+        reader.readAsDataURL(file);
+      });
+      
+      // Add the photo to the album with the custom name
+      addPhotoToAlbum(albumId, photoNames[file.name], fileDataUrl);
+      
+      // Mark upload as complete
+      setUploadProgress(prev => ({
+        ...prev,
+        [file.name]: 100
+      }));
+      
+      // Small delay between files
+      await new Promise(resolve => setTimeout(resolve, 200));
     }
     
-    // In a real app, you would upload the files to a server here
-    // For now, we'll just simulate it
-    
+    // Cleanup after all uploads
     setTimeout(() => {
       setIsUploading(false);
       setFiles([]);
       setUploadProgress({});
+      setPhotoNames({});
       onPhotoUploaded();
     }, 500);
   };
@@ -94,7 +135,17 @@ const PhotoUpload = ({ albumId, onPhotoUploaded }: PhotoUploadProps) => {
             {files.map(file => (
               <div key={file.name} className="flex items-center bg-gray-50 p-2 rounded-md">
                 <div className="flex-1">
-                  <p className="text-sm font-medium truncate">{file.name}</p>
+                  <div className="flex items-center mb-1">
+                    <input
+                      type="text"
+                      value={photoNames[file.name] || ''}
+                      onChange={(e) => handleNameChange(file.name, e.target.value)}
+                      className="text-sm w-full border border-gray-300 rounded px-2 py-1"
+                      placeholder="Название фото"
+                      disabled={isUploading}
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 truncate">{file.name}</p>
                   <Progress value={uploadProgress[file.name] || 0} className="h-1.5 mt-1" />
                 </div>
                 {uploadProgress[file.name] === 100 ? (

@@ -13,3 +13,9 @@ export interface Photo {
   albumId: string;
   createdAt: Date;
 }
+
+export interface CollageSettings {
+  gap: number;
+  photoSize: 'small' | 'medium' | 'large';
+  layout: 'grid' | 'masonry' | 'cards';
+}

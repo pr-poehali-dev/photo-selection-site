@@ -4,20 +4,7 @@ import { Album, Photo } from './types';
 // Use localStorage to persist albums
 const STORAGE_KEY = 'photo-app-albums';
 
-// Sample photos
-const samplePhotos: { [key: string]: string[] } = {
-  'природа': [
-    'https://cdn.poehali.dev/files/89c7853f-68f8-449d-be41-1e8807ba700c.jpg',
-    'https://cdn.poehali.dev/files/82672c3b-ab00-4124-9ced-32246c299351.jpg',
-    'https://cdn.poehali.dev/files/d2488645-27be-4f04-9061-9f9531b3d514.jpg'
-  ],
-  'портрет': [
-    'https://source.unsplash.com/random/800x600?portrait',
-    'https://source.unsplash.com/random/900x700?portrait'
-  ]
-};
-
-// Initialize with some default albums if none exist
+// Initialize with empty albums if none exist
 const initializeAlbums = (): Album[] => {
   const storedAlbums = localStorage.getItem(STORAGE_KEY);
   
@@ -35,22 +22,11 @@ const initializeAlbums = (): Album[] => {
       }));
     } catch (e) {
       console.error('Failed to parse stored albums:', e);
-      return createDefaultAlbums();
+      return [];
     }
   }
   
-  return createDefaultAlbums();
-};
-
-const createDefaultAlbums = (): Album[] => {
-  return [
-    createAlbum('Природа', samplePhotos['природа'].map((url, i) => 
-      createPhoto(`Природа ${i+1}`, url, 'album-1')
-    )),
-    createAlbum('Портреты', samplePhotos['портрет'].map((url, i) => 
-      createPhoto(`Портрет ${i+1}`, url, 'album-2')
-    ))
-  ];
+  return [];
 };
 
 // Save albums to localStorage
