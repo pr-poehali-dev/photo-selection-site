@@ -28,9 +28,9 @@ const AlbumDetail = () => {
     loadAlbum();
   }, [id]);
   
-  const handlePhotoUploaded = () => {
+  const handlePhotosUpdated = () => {
     if (!id) return;
-    // Reload album data after new photos are uploaded
+    // Reload album data after photos are updated (uploaded or deleted)
     const updatedAlbum = getAlbumById(id);
     if (updatedAlbum) {
       setAlbum(updatedAlbum);
@@ -81,10 +81,14 @@ const AlbumDetail = () => {
           <p className="text-photo-muted">{album.photos.length} фото</p>
         </div>
         
-        <PhotoUpload albumId={album.id} onPhotoUploaded={handlePhotoUploaded} />
+        <PhotoUpload albumId={album.id} onPhotoUploaded={handlePhotosUpdated} />
         
         <div className="mt-8">
-          <PhotoGrid photos={album.photos} />
+          <PhotoGrid 
+            photos={album.photos} 
+            albumId={album.id}
+            onPhotosDeleted={handlePhotosUpdated}
+          />
         </div>
       </main>
     </div>

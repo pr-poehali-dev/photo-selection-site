@@ -122,3 +122,26 @@ export const addPhotoToAlbum = (albumId: string, name: string, url: string): Pho
   saveAlbums(updatedAlbums);
   return newPhoto;
 };
+
+// Delete photos from album
+export const deletePhotosFromAlbum = (albumId: string, photoIds: string[]): boolean => {
+  const albums = getAlbums();
+  const albumIndex = albums.findIndex(album => album.id === albumId);
+  
+  if (albumIndex === -1) return false;
+  
+  const updatedPhotos = albums[albumIndex].photos.filter(
+    photo => !photoIds.includes(photo.id)
+  );
+  
+  const updatedAlbum = { 
+    ...albums[albumIndex],
+    photos: updatedPhotos
+  };
+  
+  const updatedAlbums = [...albums];
+  updatedAlbums[albumIndex] = updatedAlbum;
+  
+  saveAlbums(updatedAlbums);
+  return true;
+};
